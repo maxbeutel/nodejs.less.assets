@@ -21,12 +21,8 @@ app.get('/*.css', function(req, res, next) {
     var lessPathname = req.params[0] + '.less';
     var lessPathnameAbsolute = path.join(websitesDir, hostname, lessPathname);
 
-console.log(lessPathnameAbsolute);
-
     var cssPathname = req.params[0] + '.css';
     var cssPathnameAbsolute = path.join(websitesDir, hostname, cssPathname);
-
-console.log(cssPathnameAbsolute);
 
     path.exists(lessPathnameAbsolute, function(exists) {
         // try plain .css file if .less file does not exist
