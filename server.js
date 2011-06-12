@@ -12,7 +12,7 @@ app.get('/*.css', function(req, res, next) {
     var websitesDir = process.env.WEBSITES_DIR;
 
     if (!websitesDir) {
-        res.send('WEBSITES_DIR env variable not set', { 'Content-Type': 'text/plain' }, 500);
+        res.send('WEBSITES_DIR env variable not set', {'Content-Type': 'text/plain'}, 500);
         return;
     }
 
@@ -24,43 +24,33 @@ app.get('/*.css', function(req, res, next) {
     var cssPathname = req.params[0] + '.css';
     var cssPathnameAbsolute = path.join(websitesDir, hostname, cssPathname);
 
-    path.exists(lessPathnameAbsolute, function(exists) {
-        // try plain .css file if .less file does not exist
-        if (!exists) {
-            path.exists(cssPathnameAbsolute, function(exists) {
-                if (!exists) {
-                    res.send('Could not locate corresponding .less/.css file', { 'Content-Type': 'text/plain' }, 404);
-                    return;
-                }
-
-                res.sendfile(cssPathnameAbsolute);
-            });
-
-            return;
-        }
-
-        // output parsed .less file
-        fs.readFile(lessPathnameAbsolute, 'utf-8', function(err, fileContent) {
+    Step(
+        function readLessFile() {
+            fs.readFile(lessPathnameAbsolute, this);
+        },
+        function extractCssFromLessFileOrFallback(err, fileContent) {
+            // less file not found
+            // fallback to css file instead
             if (err) {
-                next(err);
-                return;
-            }
-
-            try {
+                return fs.readFile(cssPathnameAbsolute, this);
+            // parse less file
+            } else {
                 var parser = new(less.Parser)({
                     paths: ['.'],
                     filename: path.basename(lessPathnameAbsolute)
                 });
 
-                parser.parse(fileContent, function (e, tree) {
-                    res.send(tree.toCSS({ compress: false }), { 'Content-Type': 'text/css' }, 200);
-                });
-            } catch(e) {
-                res.send('Parse error: \n' + sys.inspect(e), { 'Content-Type': 'text/plain' }, 500);
-                console.log(e);
+                parser.parse(fileContent.toString(), this);
             }
-        }); 
-    });
+        },
+        function sendResponse(err, parsedCss) {
+            if (err) {
+                res.send('Error sending .less/.css file\n' + sys.inspect(err), {'Content-Type': 'text/plain'}, 500);
+            } else {
+                res.send((parsedCss instanceof Buffer ? parsedCss : parsedCss.toCSS()), {'Content-Type': 'text/css'}, 200);
+            }
+        }
+    );
 });
 
 app.listen(3000);
