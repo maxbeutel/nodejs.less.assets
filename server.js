@@ -18,10 +18,10 @@ app.get('/*.css', function(req, res, next) {
 
     var hostname = req.headers.host.split(':')[0];
 
-    var lessPathname = req.params[0] + '.less';
+    var lessPathname = path.normalize(req.params[0] + '.less');
     var lessPathnameAbsolute = path.join(websitesDir, hostname, lessPathname);
 
-    var cssPathname = req.params[0] + '.css';
+    var cssPathname = path.normalize(req.params[0] + '.css');
     var cssPathnameAbsolute = path.join(websitesDir, hostname, cssPathname);
 
     Step(
