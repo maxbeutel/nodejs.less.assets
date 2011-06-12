@@ -32,7 +32,7 @@ app.get('/*.css', function(req, res, next) {
             // less file not found
             // fallback to css file instead
             if (err) {
-                return fs.readFile(cssPathnameAbsolute, this);
+                fs.readFile(cssPathnameAbsolute, this);
             // parse less file
             } else {
                 var parser = new(less.Parser)({
