@@ -43,11 +43,24 @@ app.get('/*.css', function(req, res, next) {
                 parser.parse(fileContent.toString(), this);
             }
         },
+        function handleParserResult(err, parserResult) {
+            if (err) {
+                throw err;
+            }
+
+            // we used the fallback
+            if (parserResult instanceof Buffer) {
+                this(null, parserResult);
+            // else finish conversion to CSS
+            } else {
+                this(null, parserResult.toCSS());
+            }
+        },
         function sendResponse(err, parsedCss) {
             if (err) {
                 res.send('Error sending .less/.css file\n' + sys.inspect(err), {'Content-Type': 'text/plain'}, 500);
             } else {
-                res.send((parsedCss instanceof Buffer ? parsedCss : parsedCss.toCSS()), {'Content-Type': 'text/css'}, 200);
+                res.send(parsedCss, {'Content-Type': 'text/css'}, 200);
             }
         }
     );
