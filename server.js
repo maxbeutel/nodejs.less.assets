@@ -32,14 +32,7 @@ app.get('/*.css', function(req, res, next) {
                     return;
                 }
 
-                fs.readFile(cssPathnameAbsolute, 'utf-8', function(err, fileContent) {
-                    if (err) {
-                        next(err);
-                        return;
-                    }
-
-                    res.send(fileContent, { 'Content-Type': 'text/css' }, 200);
-                });
+                res.sendfile(cssPathnameAbsolute);
             });
 
             return;
